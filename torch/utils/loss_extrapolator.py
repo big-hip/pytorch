@@ -6,17 +6,16 @@ Following the empirical neural scaling laws of Kaplan et al., 2020
 optimization step ``t`` is well described by a power law with an irreducible
 offset::
 
-    L(t) = L_inf + (t_c / t) ** alpha
+    L(t) = L_inf + coefficient * t ** -exponent
 
-where ``L_inf`` is the irreducible loss the run converges to, ``t_c`` is a
-characteristic step and ``alpha`` is the scaling exponent. Fitting these three
+where ``L_inf`` is the irreducible loss the run converges to, ``coefficient``
+sets the scale and ``exponent`` is the scaling exponent. Fitting these three
 parameters on the first few ``(step, loss)`` pairs gives a cheap estimate of the
 loss the run will reach after many more steps, which is handy to print alongside
 the live loss during training.
 """
 
 import math
-from typing import Optional
 
 import torch
 
@@ -41,8 +40,10 @@ class LossExtrapolator:
             extrapolator.update(step + 1, loss.item())
             final = extrapolator.estimate_final_loss(total_steps)
             if final is not None:
-                print(f"step {step + 1} loss {loss.item():.4f} "
-                      f"estimated final loss {final:.4f}")
+                print(
+                    f"step {step + 1} loss {loss.item():.4f} "
+                    f"estimated final loss {final:.4f}"
+                )
 
     Args:
         irreducible_loss (float, optional): if given, ``L_inf`` is fixed to this
@@ -56,7 +57,7 @@ class LossExtrapolator:
 
     def __init__(
         self,
-        irreducible_loss: Optional[float] = None,
+        irreducible_loss: float | None = None,
         min_observations: int = 4,
     ) -> None:
         if irreducible_loss is not None and irreducible_loss < 0:
@@ -72,9 +73,9 @@ class LossExtrapolator:
         self.min_observations = min_observations
         self.steps: list[float] = []
         self.losses: list[float] = []
-        self.irreducible_loss: Optional[float] = None
-        self.coefficient: Optional[float] = None
-        self.exponent: Optional[float] = None
+        self.irreducible_loss: float | None = None
+        self.coefficient: float | None = None
+        self.exponent: float | None = None
         self._fitted = False
 
     def update(self, step, loss) -> None:
@@ -179,7 +180,7 @@ class LossExtrapolator:
                 break
         return 0.5 * (lo + hi)
 
-    def predict(self, step) -> Optional[float]:
+    def predict(self, step) -> float | None:
         """Predict the loss at ``step`` from the current fit.
 
         Fits lazily if new observations have been recorded since the last fit.
@@ -196,14 +197,14 @@ class LossExtrapolator:
             raise ValueError(f"step must be positive, got {step}")
         if not self._fitted and not self.fit():
             return None
-        assert (
+        assert (  # noqa: S101
             self.irreducible_loss is not None
             and self.coefficient is not None
             and self.exponent is not None
         )
         return self.irreducible_loss + self.coefficient * step ** (-self.exponent)
 
-    def estimate_final_loss(self, total_steps) -> Optional[float]:
+    def estimate_final_loss(self, total_steps) -> float | None:
         """Estimate the loss at the end of training.
 
         Convenience wrapper around :meth:`predict` for the final step.
