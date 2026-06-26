@@ -51,6 +51,17 @@
 .. autofunction:: format_time
 ```
 
+# torch.utils.loss_extrapolator
+
+```{eval-rst}
+.. currentmodule:: torch.utils.loss_extrapolator
+```
+
+```{eval-rst}
+.. autoclass:: LossExtrapolator
+    :members:
+```
+
 # torch.utils.collect_env
 ```{eval-rst}
 .. automodule:: torch.utils.collect_env
@@ -206,6 +217,7 @@ for tracking purposes -->
 .. py:module:: torch.utils.hipify.cuda_to_hip_mappings
 .. py:module:: torch.utils.hipify.version
 .. py:module:: torch.utils.hooks
+.. py:module:: torch.utils.loss_extrapolator
 .. py:module:: torch.utils.mkldnn
 .. py:module:: torch.utils.mobile_optimizer
 .. py:module:: torch.utils.show_pickle
