@@ -83,15 +83,19 @@ class LossExtrapolator:
         Args:
             step: positive optimization step (1-indexed). Accepts a Python
                 number or a scalar :class:`torch.Tensor`.
-            loss: loss value at ``step``. Accepts a Python number or a scalar
+            loss: loss value at ``step``; must be strictly positive, as required
+                by the power-law model. Accepts a Python number or a scalar
                 :class:`torch.Tensor`.
         """
         step = float(step.item() if isinstance(step, torch.Tensor) else step)
         loss = float(loss.item() if isinstance(loss, torch.Tensor) else loss)
         if not math.isfinite(step) or step <= 0:
             raise ValueError(f"step must be a positive finite number, got {step}")
-        if not math.isfinite(loss):
-            raise ValueError(f"loss must be finite, got {loss}")
+        # The power law L_inf + coefficient * t ** -exponent with L_inf >= 0 and
+        # coefficient > 0 is strictly positive, so a non-positive loss cannot be
+        # fit and would otherwise corrupt the log-space search.
+        if not math.isfinite(loss) or loss <= 0:
+            raise ValueError(f"loss must be a positive finite number, got {loss}")
         self.steps.append(step)
         self.losses.append(loss)
         self._fitted = False
