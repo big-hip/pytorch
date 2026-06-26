@@ -101,10 +101,11 @@ class TestLossExtrapolator(TestCase):
         with self.assertRaisesRegex(ValueError, "step must be"):
             ex.update(bad_step, 1.0)
 
-    def test_invalid_loss_raises(self):
+    @parametrize("bad_loss", [float("nan"), 0.0, -1.0])
+    def test_invalid_loss_raises(self, bad_loss):
         ex = LossExtrapolator()
-        with self.assertRaisesRegex(ValueError, "loss must be finite"):
-            ex.update(1, float("nan"))
+        with self.assertRaisesRegex(ValueError, "loss must be a positive finite"):
+            ex.update(1, bad_loss)
 
     def test_invalid_construction_raises(self):
         with self.assertRaisesRegex(ValueError, "non-negative"):

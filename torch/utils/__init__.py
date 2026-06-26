@@ -11,6 +11,7 @@ from torch.utils import (
     data as data,
     deterministic as deterministic,
     hooks as hooks,
+    loss_extrapolator as loss_extrapolator,
 )
 from torch.utils.backend_registration import (
     generate_methods_for_privateuse1_backend,
